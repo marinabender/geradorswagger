@@ -57,7 +57,13 @@ export function CsvImport({ onImport }: CsvImportProps) {
         const headers = parseCsvLine(lines[0]).map((h) => h.toLowerCase());
         const nameIndex = headers.findIndex((h) => h === 'name' || h === 'campo' || h === 'field');
         const typeIndex = headers.findIndex((h) => h === 'type' || h === 'tipo');
-        const descIndex = headers.findIndex((h) => h === 'description' || h === 'descrição' || h === 'descricao');
+        const descIndex = headers.findIndex((h) => 
+          h === 'description' || h === 'descrição' || h === 'descricao' || 
+          h === 'desc' || h === 'detalhe' || h === 'detalhes' || h === 'observacao' || h === 'obs'
+        );
+        
+        // Se não encontrou header de descrição, assume que é a terceira coluna (índice 2)
+        const finalDescIndex = descIndex !== -1 ? descIndex : (headers.length >= 3 ? 2 : -1);
 
         if (nameIndex === -1) {
           toast.error('CSV deve ter uma coluna "name" ou "campo"');
@@ -75,7 +81,7 @@ export function CsvImport({ onImport }: CsvImportProps) {
             id: uuidv4(),
             name: values[nameIndex] || '',
             type: type as FieldDefinition['type'],
-            description: descIndex !== -1 ? values[descIndex] || '' : '',
+            description: finalDescIndex !== -1 ? values[finalDescIndex] || '' : '',
             required: false,
             example: '',
           };
