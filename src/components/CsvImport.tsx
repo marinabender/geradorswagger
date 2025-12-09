@@ -17,6 +17,33 @@ export function CsvImport({ onImport }: CsvImportProps) {
     if (!file) return;
 
     const reader = new FileReader();
+    const parseCsvLine = (line: string): string[] => {
+      const result: string[] = [];
+      let current = '';
+      let inQuotes = false;
+      
+      for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        
+        if (char === '"') {
+          if (inQuotes && line[i + 1] === '"') {
+            current += '"';
+            i++;
+          } else {
+            inQuotes = !inQuotes;
+          }
+        } else if (char === ',' && !inQuotes) {
+          result.push(current.trim());
+          current = '';
+        } else {
+          current += char;
+        }
+      }
+      
+      result.push(current.trim());
+      return result;
+    };
+
     reader.onload = (event) => {
       try {
         const text = event.target?.result as string;
@@ -27,7 +54,7 @@ export function CsvImport({ onImport }: CsvImportProps) {
           return;
         }
 
-        const headers = lines[0].split(',').map((h) => h.trim().toLowerCase());
+        const headers = parseCsvLine(lines[0]).map((h) => h.toLowerCase());
         const nameIndex = headers.findIndex((h) => h === 'name' || h === 'campo' || h === 'field');
         const typeIndex = headers.findIndex((h) => h === 'type' || h === 'tipo');
         const descIndex = headers.findIndex((h) => h === 'description' || h === 'descrição' || h === 'descricao');
@@ -40,7 +67,7 @@ export function CsvImport({ onImport }: CsvImportProps) {
         const validTypes = ['string', 'number', 'integer', 'boolean', 'array', 'object'];
         
         const fields: FieldDefinition[] = lines.slice(1).map((line) => {
-          const values = line.split(',').map((v) => v.trim());
+          const values = parseCsvLine(line);
           const rawType = typeIndex !== -1 ? values[typeIndex]?.toLowerCase() : 'string';
           const type = validTypes.includes(rawType) ? rawType : 'string';
 
