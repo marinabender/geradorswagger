@@ -26,11 +26,11 @@ const createDefaultEndpoint = (): EndpointDefinition => ({
     fields: [],
     example: '{\n  \n}',
   },
-  response: {
-    statusCode: 200,
-    description: 'Sucesso',
-    example: '{\n  "success": true\n}',
-  },
+  responses: [
+    { statusCode: 200, description: 'Sucesso', example: '{\n  "success": true\n}' },
+    { statusCode: 400, description: 'Requisição inválida', example: '{\n  "error": "Bad Request"\n}' },
+    { statusCode: 404, description: 'Não encontrado', example: '{\n  "error": "Not Found"\n}' },
+  ],
 });
 
 const createDefaultApi = (): ApiDefinition => ({

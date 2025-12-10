@@ -21,6 +21,12 @@ export interface AuthConfig {
   token?: string;
 }
 
+export interface ResponseDefinition {
+  statusCode: number;
+  description: string;
+  example: string;
+}
+
 export interface EndpointDefinition {
   id: string;
   method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
@@ -33,11 +39,7 @@ export interface EndpointDefinition {
     fields: FieldDefinition[];
     example: string;
   };
-  response: {
-    statusCode: number;
-    description: string;
-    example: string;
-  };
+  responses: ResponseDefinition[];
 }
 
 export interface ApiDefinition {
