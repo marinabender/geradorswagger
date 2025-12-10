@@ -3,7 +3,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { EndpointDefinition, FieldDefinition, HeaderDefinition } from '@/types/swagger';
+import { EndpointDefinition, FieldDefinition, HeaderDefinition, ResponseDefinition } from '@/types/swagger';
 import { ChevronDown, ChevronUp, Code2, FileText, Play, Plus, Route, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { FieldEditor } from './FieldEditor';
@@ -292,56 +292,83 @@ export function EndpointForm({ endpoint, onChange, onRemove, onTest }: EndpointF
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <Code2 className="h-4 w-4 text-accent" />
-              <Label className="text-foreground font-medium">Response</Label>
+              <Label className="text-foreground font-medium">Responses</Label>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-muted-foreground">Status Code</Label>
-                <Input
-                  type="number"
-                  placeholder="200"
-                  value={endpoint.response.statusCode}
-                  onChange={(e) =>
-                    updateField('response', {
-                      ...endpoint.response,
-                      statusCode: parseInt(e.target.value) || 200,
-                    })
-                  }
-                  className="bg-input border-border"
-                />
+            {endpoint.responses.map((response, index) => (
+              <div key={index} className="space-y-3 p-4 border border-border rounded-lg bg-secondary/20">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className={`font-mono font-semibold ${
+                    response.statusCode >= 200 && response.statusCode < 300 ? 'text-accent' :
+                    response.statusCode >= 400 && response.statusCode < 500 ? 'text-warning' :
+                    'text-destructive'
+                  }`}>
+                    {response.statusCode}
+                  </span>
+                  <span className="text-muted-foreground text-sm">{response.description}</span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-muted-foreground text-sm">Status Code</Label>
+                    <Input
+                      type="number"
+                      value={response.statusCode}
+                      onChange={(e) => {
+                        const newResponses = [...endpoint.responses];
+                        newResponses[index] = { ...response, statusCode: parseInt(e.target.value) || 200 };
+                        updateField('responses', newResponses);
+                      }}
+                      className="bg-input border-border"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-muted-foreground text-sm">Descrição</Label>
+                    <Input
+                      value={response.description}
+                      onChange={(e) => {
+                        const newResponses = [...endpoint.responses];
+                        newResponses[index] = { ...response, description: e.target.value };
+                        updateField('responses', newResponses);
+                      }}
+                      className="bg-input border-border"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-muted-foreground text-sm">Exemplo (JSON)</Label>
+                  <Textarea
+                    placeholder='{"success": true}'
+                    value={response.example}
+                    onChange={(e) => {
+                      const newResponses = [...endpoint.responses];
+                      newResponses[index] = { ...response, example: e.target.value };
+                      updateField('responses', newResponses);
+                    }}
+                    className="bg-input border-border font-mono text-sm min-h-[80px]"
+                  />
+                </div>
               </div>
+            ))}
 
-              <div className="space-y-2">
-                <Label className="text-muted-foreground">Descrição da Resposta</Label>
-                <Input
-                  placeholder="Sucesso"
-                  value={endpoint.response.description}
-                  onChange={(e) =>
-                    updateField('response', {
-                      ...endpoint.response,
-                      description: e.target.value,
-                    })
-                  }
-                  className="bg-input border-border"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label className="text-muted-foreground">Exemplo de Response (JSON)</Label>
-              <Textarea
-                placeholder='{"success": true, "data": {}}'
-                value={endpoint.response.example}
-                onChange={(e) =>
-                  updateField('response', {
-                    ...endpoint.response,
-                    example: e.target.value,
-                  })
-                }
-                className="bg-input border-border font-mono text-sm min-h-[120px]"
-              />
-            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const newResponse: ResponseDefinition = {
+                  statusCode: 500,
+                  description: 'Erro interno',
+                  example: '{\n  "error": "Internal Server Error"\n}',
+                };
+                updateField('responses', [...endpoint.responses, newResponse]);
+              }}
+              className="border-accent/30 text-accent hover:bg-accent/10"
+            >
+              <Plus className="h-4 w-4 mr-1" />
+              Adicionar Response
+            </Button>
           </div>
         </div>
       )}

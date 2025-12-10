@@ -52,23 +52,27 @@ function parseExample(example: string): any {
 }
 
 function generatePathItem(endpoint: EndpointDefinition): Record<string, any> {
+  const responses: Record<string, any> = {};
+  
+  endpoint.responses.forEach((response) => {
+    responses[response.statusCode] = {
+      description: response.description,
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+          },
+          example: parseExample(response.example),
+        },
+      },
+    };
+  });
+
   const operation: Record<string, any> = {
     summary: endpoint.summary,
     description: endpoint.description,
     tags: endpoint.tags,
-    responses: {
-      [endpoint.response.statusCode]: {
-        description: endpoint.response.description,
-        content: {
-          'application/json': {
-            schema: {
-              type: 'object',
-            },
-            example: parseExample(endpoint.response.example),
-          },
-        },
-      },
-    },
+    responses,
   };
 
   // Add headers as parameters
