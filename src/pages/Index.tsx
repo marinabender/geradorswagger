@@ -39,6 +39,7 @@ const createDefaultApi = (): ApiDefinition => ({
   description: '',
   version: '1.0.0',
   baseUrl: 'https://api.example.com',
+  auth: { type: 'none' },
   endpoints: [],
 });
 
