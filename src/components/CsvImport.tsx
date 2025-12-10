@@ -49,39 +49,53 @@ export function CsvImport({ onImport }: CsvImportProps) {
         const text = event.target?.result as string;
         const lines = text.split('\n').filter((line) => line.trim());
         
-        if (lines.length < 2) {
-          toast.error('CSV deve ter pelo menos uma linha de dados');
-          return;
-        }
-
-        const headers = parseCsvLine(lines[0]).map((h) => h.toLowerCase());
-        const nameIndex = headers.findIndex((h) => h === 'name' || h === 'campo' || h === 'field');
-        const typeIndex = headers.findIndex((h) => h === 'type' || h === 'tipo');
-        const descIndex = headers.findIndex((h) => 
-          h === 'description' || h === 'descrição' || h === 'descricao' || 
-          h === 'desc' || h === 'detalhe' || h === 'detalhes' || h === 'observacao' || h === 'obs'
-        );
-        
-        // Se não encontrou header de descrição, assume que é a terceira coluna (índice 2)
-        const finalDescIndex = descIndex !== -1 ? descIndex : (headers.length >= 3 ? 2 : -1);
-
-        if (nameIndex === -1) {
-          toast.error('CSV deve ter uma coluna "name" ou "campo"');
+        if (lines.length < 1) {
+          toast.error('CSV está vazio');
           return;
         }
 
         const validTypes = ['string', 'number', 'integer', 'boolean', 'array', 'object'];
+        const headerKeywords = ['name', 'campo', 'field', 'type', 'tipo', 'description', 'descrição', 'descricao'];
         
-        const fields: FieldDefinition[] = lines.slice(1).map((line) => {
+        const firstLineValues = parseCsvLine(lines[0]).map((h) => h.toLowerCase().trim());
+        const hasHeader = firstLineValues.some((val) => headerKeywords.includes(val));
+        
+        let nameIndex = 0;
+        let typeIndex = 1;
+        let descIndex = 2;
+        let dataLines = lines;
+        
+        if (hasHeader) {
+          // CSV tem header - encontrar índices
+          nameIndex = firstLineValues.findIndex((h) => h === 'name' || h === 'campo' || h === 'field');
+          typeIndex = firstLineValues.findIndex((h) => h === 'type' || h === 'tipo');
+          const foundDescIndex = firstLineValues.findIndex((h) => 
+            h === 'description' || h === 'descrição' || h === 'descricao' || 
+            h === 'desc' || h === 'detalhe' || h === 'detalhes' || h === 'observacao' || h === 'obs'
+          );
+          descIndex = foundDescIndex !== -1 ? foundDescIndex : (firstLineValues.length >= 3 ? 2 : -1);
+          
+          if (nameIndex === -1) {
+            nameIndex = 0; // Assume primeira coluna como nome
+          }
+          if (typeIndex === -1) {
+            typeIndex = 1; // Assume segunda coluna como tipo
+          }
+          
+          dataLines = lines.slice(1);
+        }
+        // Se não tem header, assume: coluna 0 = name, coluna 1 = type, coluna 2 = description
+        
+        const fields: FieldDefinition[] = dataLines.map((line) => {
           const values = parseCsvLine(line);
-          const rawType = typeIndex !== -1 ? values[typeIndex]?.toLowerCase() : 'string';
+          const rawType = values[typeIndex]?.toLowerCase()?.trim() || 'string';
           const type = validTypes.includes(rawType) ? rawType : 'string';
 
           return {
             id: uuidv4(),
-            name: values[nameIndex] || '',
+            name: values[nameIndex]?.trim() || '',
             type: type as FieldDefinition['type'],
-            description: finalDescIndex !== -1 ? values[finalDescIndex] || '' : '',
+            description: descIndex !== -1 ? values[descIndex]?.trim() || '' : '',
             required: false,
             example: '',
           };
