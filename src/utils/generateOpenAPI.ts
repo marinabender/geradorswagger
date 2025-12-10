@@ -51,10 +51,13 @@ function parseExample(example: string): any {
   }
 }
 
-function generatePathItem(endpoint: EndpointDefinition): Record<string, any> {
+function generatePathItem(endpoint: EndpointDefinition & { response?: any }): Record<string, any> {
   const responses: Record<string, any> = {};
   
-  endpoint.responses.forEach((response) => {
+  // Handle both new 'responses' array and legacy 'response' object
+  const endpointResponses = endpoint.responses || (endpoint.response ? [endpoint.response] : []);
+  
+  endpointResponses.forEach((response) => {
     responses[response.statusCode] = {
       description: response.description,
       content: {
