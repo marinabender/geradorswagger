@@ -71,6 +71,22 @@ function generatePathItem(endpoint: EndpointDefinition): Record<string, any> {
     },
   };
 
+  // Add headers as parameters
+  if (endpoint.headers && endpoint.headers.length > 0) {
+    operation.parameters = endpoint.headers
+      .filter((h) => h.name) // Only include headers with names
+      .map((header) => ({
+        name: header.name,
+        in: 'header',
+        required: true,
+        description: header.description || '',
+        schema: {
+          type: 'string',
+          example: header.value || '',
+        },
+      }));
+  }
+
   if (endpoint.method !== 'GET' && endpoint.requestBody.fields.length > 0) {
     operation.requestBody = {
       required: true,
