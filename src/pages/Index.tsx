@@ -3,6 +3,7 @@ import { ApiSelector } from '@/components/ApiSelector';
 import { ApiTester } from '@/components/ApiTester';
 import { EndpointForm } from '@/components/EndpointForm';
 import { Header } from '@/components/Header';
+import { JsonImport } from '@/components/JsonImport';
 import { JsonPreview } from '@/components/JsonPreview';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -67,6 +68,11 @@ export default function Index() {
     toast.success('Nova API adicionada!');
   };
 
+  const importApi = (api: ApiDefinition) => {
+    setApis([...apis, api]);
+    setCurrentApiId(api.id);
+  };
+
   const deleteApi = (id: string) => {
     if (apis.length <= 1) {
       toast.error('Você precisa ter pelo menos uma API');
@@ -120,13 +126,16 @@ export default function Index() {
             onAdd={addApi}
             onDelete={deleteApi}
           />
-          <Button
-            onClick={handleSave}
-            className="bg-gradient-to-r from-accent to-primary hover:opacity-90"
-          >
-            <Save className="h-4 w-4 mr-2" />
-            Salvar
-          </Button>
+          <div className="flex gap-2">
+            <JsonImport onImport={importApi} />
+            <Button
+              onClick={handleSave}
+              className="bg-gradient-to-r from-accent to-primary hover:opacity-90"
+            >
+              <Save className="h-4 w-4 mr-2" />
+              Salvar
+            </Button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
