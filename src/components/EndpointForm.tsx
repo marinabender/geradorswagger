@@ -295,7 +295,7 @@ export function EndpointForm({ endpoint, onChange, onRemove, onTest }: EndpointF
               <Label className="text-foreground font-medium">Responses</Label>
             </div>
 
-            {endpoint.responses.map((response, index) => (
+            {(endpoint.responses || []).map((response, index) => (
               <div key={index} className="space-y-3 p-4 border border-border rounded-lg bg-secondary/20">
                 <div className="flex items-center gap-2 mb-2">
                   <span className={`font-mono font-semibold ${
@@ -315,7 +315,7 @@ export function EndpointForm({ endpoint, onChange, onRemove, onTest }: EndpointF
                       type="number"
                       value={response.statusCode}
                       onChange={(e) => {
-                        const newResponses = [...endpoint.responses];
+                        const newResponses = [...(endpoint.responses || [])];
                         newResponses[index] = { ...response, statusCode: parseInt(e.target.value) || 200 };
                         updateField('responses', newResponses);
                       }}
@@ -328,7 +328,7 @@ export function EndpointForm({ endpoint, onChange, onRemove, onTest }: EndpointF
                     <Input
                       value={response.description}
                       onChange={(e) => {
-                        const newResponses = [...endpoint.responses];
+                        const newResponses = [...(endpoint.responses || [])];
                         newResponses[index] = { ...response, description: e.target.value };
                         updateField('responses', newResponses);
                       }}
@@ -343,7 +343,7 @@ export function EndpointForm({ endpoint, onChange, onRemove, onTest }: EndpointF
                     placeholder='{"success": true}'
                     value={response.example}
                     onChange={(e) => {
-                      const newResponses = [...endpoint.responses];
+                      const newResponses = [...(endpoint.responses || [])];
                       newResponses[index] = { ...response, example: e.target.value };
                       updateField('responses', newResponses);
                     }}
@@ -362,7 +362,7 @@ export function EndpointForm({ endpoint, onChange, onRemove, onTest }: EndpointF
                   description: 'Erro interno',
                   example: '{\n  "error": "Internal Server Error"\n}',
                 };
-                updateField('responses', [...endpoint.responses, newResponse]);
+                updateField('responses', [...(endpoint.responses || []), newResponse]);
               }}
               className="border-accent/30 text-accent hover:bg-accent/10"
             >
