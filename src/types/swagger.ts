@@ -46,6 +46,7 @@ export interface ApiDefinition {
   description: string;
   version: string;
   baseUrl: string;
+  auth: AuthConfig;
   endpoints: EndpointDefinition[];
 }
 
@@ -60,5 +61,7 @@ export interface OpenAPISpec {
   paths: Record<string, any>;
   components: {
     schemas: Record<string, any>;
+    securitySchemes?: Record<string, any>;
   };
+  security?: Array<Record<string, any>>;
 }

@@ -114,7 +114,7 @@ export function generateOpenAPISpec(api: ApiDefinition): OpenAPISpec {
     Object.assign(paths[endpoint.path], generatePathItem(endpoint));
   });
 
-  return {
+  const spec: OpenAPISpec = {
     openapi: '3.0.3',
     info: {
       title: api.title,
@@ -127,6 +127,29 @@ export function generateOpenAPISpec(api: ApiDefinition): OpenAPISpec {
       schemas: {},
     },
   };
+
+  // Add security schemes if auth is configured
+  if (api.auth && api.auth.type === 'basic') {
+    spec.components.securitySchemes = {
+      basicAuth: {
+        type: 'http',
+        scheme: 'basic',
+        description: `Username: ${api.auth.username || ''}, Password: ${api.auth.password || ''}`,
+      },
+    };
+    spec.security = [{ basicAuth: [] }];
+  } else if (api.auth && api.auth.type === 'bearer') {
+    spec.components.securitySchemes = {
+      bearerAuth: {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+      },
+    };
+    spec.security = [{ bearerAuth: [] }];
+  }
+
+  return spec;
 }
 
 export function formatJSON(obj: any): string {

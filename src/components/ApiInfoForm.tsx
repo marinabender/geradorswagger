@@ -1,8 +1,9 @@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { ApiDefinition } from '@/types/swagger';
-import { FileJson2, Globe, Info, Tag } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ApiDefinition, AuthConfig } from '@/types/swagger';
+import { FileJson2, Globe, Info, Lock, Tag } from 'lucide-react';
 
 interface ApiInfoFormProps {
   api: ApiDefinition;
@@ -12,6 +13,10 @@ interface ApiInfoFormProps {
 export function ApiInfoForm({ api, onChange }: ApiInfoFormProps) {
   const updateField = (field: keyof ApiDefinition, value: string) => {
     onChange({ ...api, [field]: value });
+  };
+
+  const updateAuth = (auth: AuthConfig) => {
+    onChange({ ...api, auth });
   };
 
   return (
@@ -80,6 +85,69 @@ export function ApiInfoForm({ api, onChange }: ApiInfoFormProps) {
               className="bg-input border-border focus:border-primary focus:ring-primary"
             />
           </div>
+        </div>
+
+        {/* Authentication Section */}
+        <div className="space-y-4 pt-4 border-t border-border">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-warning/10">
+              <Lock className="h-4 w-4 text-warning" />
+            </div>
+            <h3 className="text-lg font-medium text-foreground">Autenticação</h3>
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-muted-foreground">Tipo de Autenticação</Label>
+            <Select
+              value={api.auth?.type || 'none'}
+              onValueChange={(v) => updateAuth({ ...api.auth, type: v as AuthConfig['type'] })}
+            >
+              <SelectTrigger className="bg-input border-border">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Nenhuma</SelectItem>
+                <SelectItem value="basic">Basic Auth</SelectItem>
+                <SelectItem value="bearer">Bearer Token</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {api.auth?.type === 'basic' && (
+            <div className="grid grid-cols-2 gap-4 animate-fade-in">
+              <div className="space-y-2">
+                <Label className="text-muted-foreground">Username</Label>
+                <Input
+                  placeholder="usuario"
+                  value={api.auth.username || ''}
+                  onChange={(e) => updateAuth({ ...api.auth, username: e.target.value })}
+                  className="bg-input border-border"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-muted-foreground">Password</Label>
+                <Input
+                  type="password"
+                  placeholder="••••••••"
+                  value={api.auth.password || ''}
+                  onChange={(e) => updateAuth({ ...api.auth, password: e.target.value })}
+                  className="bg-input border-border"
+                />
+              </div>
+            </div>
+          )}
+
+          {api.auth?.type === 'bearer' && (
+            <div className="space-y-2 animate-fade-in">
+              <Label className="text-muted-foreground">Token</Label>
+              <Input
+                placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                value={api.auth.token || ''}
+                onChange={(e) => updateAuth({ ...api.auth, token: e.target.value })}
+                className="bg-input border-border font-mono text-sm"
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>
